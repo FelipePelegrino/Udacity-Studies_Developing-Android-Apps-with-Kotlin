@@ -18,6 +18,7 @@ package com.example.android.dessertpusher
 
 import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -26,11 +27,13 @@ import androidx.core.app.ShareCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleObserver
 import com.example.android.dessertpusher.databinding.ActivityMainBinding
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private var revenue = 0
     private var dessertsSold = 0
+    private lateinit var dessertTimer: DessertTimer
 
     // Contains all the views
     private lateinit var binding: ActivityMainBinding
@@ -65,6 +68,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (savedInstanceState != null) {
+            revenue = savedInstanceState.getInt("key_revenue")
+        }
+        Timber.i("onCreate called")
+
         // Use Data Binding to get reference to the views
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
@@ -75,6 +83,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         // Set the TextViews to the right values
         binding.revenue = revenue
         binding.amountSold = dessertsSold
+        dessertTimer = DessertTimer(this.lifecycle)
 
         // Make sure the correct dessert is showing
         binding.dessertButton.setImageResource(currentDessert.imageId)
@@ -145,5 +154,36 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             R.id.shareMenuButton -> onShare()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+//        Log.i(TAG, "onStart is called")
+        //Timber adiciona automaticamente a TAG ao log
+        Timber.i("onStart called")
+
+//        substituir pelo observer pattern
+//        dessertTimer.startTimer()
+    }
+
+    override fun onStop() {
+        super.onStop()
+//        substituir pelo observer pattern
+//        dessertTimer.stopTimer()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Timber.i("onRestart called")
+    }
+
+
+    //Funciona a partir da API 28, antes disso devemos salvar no onStop
+    override fun onSaveInstanceState(outState: Bundle) {
+        //salva automaticamente alguns dados do nosso app
+        super.onSaveInstanceState(outState)
+        outState.putInt("key_revenue", revenue)
+        Timber.i("onSaveInstance call")
     }
 }
