@@ -6,6 +6,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
+private val CORRECT_BUZZ_PATTERN = longArrayOf(100, 100, 100, 100, 100, 100)
+private val PANIC_BUZZ_PATTERN = longArrayOf(0, 200)
+private val GAME_OVER_BUZZ_PATTERN = longArrayOf(0, 2000)
+private val NO_BUZZ_PATTERN = longArrayOf(0)
+
+enum class BuzzType(val pattern: LongArray) {
+    CORRECT(CORRECT_BUZZ_PATTERN),
+    GAME_OVER(GAME_OVER_BUZZ_PATTERN),
+    COUNTDOWN_PANIC(PANIC_BUZZ_PATTERN),
+    NO_BUZZ(NO_BUZZ_PATTERN)
+}
+
 class GameViewModel : ViewModel() {
 
     companion object {
@@ -40,11 +52,22 @@ class GameViewModel : ViewModel() {
     val currentTime : LiveData<String>
         get() = _currentTime
 
+    private val _buzzTime= MutableLiveData<BuzzType>()
+    val buzzTime : LiveData<BuzzType>
+        get() = _buzzTime
+
+
+    //caso minha variável fosse Long
+//    val currentTimeString = Transformations.map(currentTime) { time ->
+//        DateUtils.formatElapsedTime(time.toLong())
+//    }
+
     // The list of words - the front of the list is the next word to guess
     private lateinit var wordList: MutableList<String>
 
     init {
         _eventGameFinish.value = false
+        _buzzTime.value = BuzzType.NO_BUZZ
         resetList()
         nextWord()
         _score.value = 0
@@ -52,6 +75,9 @@ class GameViewModel : ViewModel() {
         timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND) {
             override fun onTick(millisUntilFinished: Long) {
                 _currentTime.value = DateUtils.formatElapsedTime(millisUntilFinished/1000)
+                if(millisUntilFinished/1000 == 3L) {
+                    _buzzTime.value = BuzzType.COUNTDOWN_PANIC
+                }
             }
 
             override fun onFinish() {
@@ -65,6 +91,26 @@ class GameViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         timer.cancel()
+    }
+
+    fun onSkip() {
+        _score.value = (score.value)?.minus(1)
+        nextWord()
+    }
+
+    fun onCorrect() {
+        _score.value = (score.value)?.plus(1)
+        nextWord()
+        _buzzTime.value = BuzzType.CORRECT
+    }
+
+    fun onGameFinishComplete() {
+        _eventGameFinish.value = false
+        _buzzTime.value = BuzzType.GAME_OVER
+    }
+
+    fun onBuzzComplete() {
+        _buzzTime.value = BuzzType.NO_BUZZ
     }
 
     /**
@@ -106,19 +152,5 @@ class GameViewModel : ViewModel() {
             resetList()
         }
         _word.value = wordList.removeAt(0)
-    }
-
-    fun onSkip() {
-        _score.value = (score.value)?.minus(1)
-        nextWord()
-    }
-
-    fun onCorrect() {
-        _score.value = (score.value)?.plus(1)
-        nextWord()
-    }
-
-    fun onGameFinishComplete() {
-        _eventGameFinish.value = false
     }
 }

@@ -56,16 +56,12 @@ class ScoreFragment : Fragment() {
             .get(ScoreViewModel::class.java)
 
         binding.scoreViewModel = scoreViewModel
+        binding.lifecycleOwner = this
 
         scoreViewModel.eventPlayAgain.observe(viewLifecycleOwner, {
             if(it) {
                 onPlayAgain()
             }
-        })
-
-        // Get args using by navArgs property delegate
-        scoreViewModel.score.observe(viewLifecycleOwner, { score ->
-            binding.scoreText.text = score.toString()
         })
 
         return binding.root
