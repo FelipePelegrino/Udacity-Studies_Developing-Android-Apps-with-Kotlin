@@ -15,3 +15,46 @@
  */
 
 package com.example.android.trackmysleepquality.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+@Database(entities = [SleepNight::class], version = 1, exportSchema = false)
+abstract class SleepDatabase : RoomDatabase() {
+
+    abstract val sleepDatabaseDao: SleepDatabaseDao
+
+    /**
+     * Como a única intenção dessa classe é nos dar acesso ao banco de dados,
+     * faremos isso através de uma class static ou no caso companion object
+     * */
+    companion object {
+
+        //Annotation Volatile garante que nossa INSTANCE será sempre a mesma
+        //Esse valor nunca ficará em cache, e ficará visível a todas as threads
+        //Utilizaremos tambem da synchronized para garantir que não haverá conflitos entre as threads, garantindo apenos uma intancia da classe
+        @Volatile
+        private var INSTANCE: SleepDatabase? = null
+
+        fun getInstance(context: Context): SleepDatabase {
+            synchronized(this) {
+                var instance = INSTANCE
+
+                if (instance == null) {
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        SleepDatabase::class.java,
+                        "sleep_history_database"
+                    )
+                        .fallbackToDestructiveMigration()
+                        .build()
+                    INSTANCE = instance
+                }
+
+                return instance
+            }
+        }
+    }
+}
