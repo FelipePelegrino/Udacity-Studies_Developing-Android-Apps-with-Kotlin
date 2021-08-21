@@ -17,4 +17,19 @@
 
 package com.example.android.marsrealestate.network
 
-class MarsProperty()
+import com.squareup.moshi.Json
+
+/**
+ * Para utlizar o moshi precisamos definir as propriedades com os mesmos nomes
+ * dos valores do objeto JSON que queremos obter assim como utilizamos o GSON
+ * Mas podemos fazer de uma forma mais amigavel aos padrões Kotlin
+ * Definimos a propriedade json com a annotation @Json passando como parametro o atributo qu queremos referenciar
+ * a essa propriedade criada em kotlin e em kotlin podemos somente manter seu padrão de convençãod e código
+ */
+data class MarsProperty(
+    val id: String,
+    @Json(name = "img_src")
+    val imgSrcUrl: String,
+    val type: String,
+    val price: Double
+)

@@ -17,4 +17,48 @@
 
 package com.example.android.marsrealestate.network
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.http.GET
+
+/*
+Classe representará a comunicação com o WebServer, é o "ViewModel" da camada network
+É nela que contém o converter no caso agora utilizaremos o Scalars
+ */
+
+
 private const val BASE_URL = "https://mars.udacity.com/"
+
+private val moshi = Moshi.Builder()
+    .add(KotlinJsonAdapterFactory())
+    .build()
+
+//alterando o factory Scalars para o moshi
+private val retrofit = Retrofit.Builder()
+    .addConverterFactory(MoshiConverterFactory.create(moshi))
+    .baseUrl(BASE_URL)
+    .build()
+
+//Define como será as requisições, e quais funcionalidades atraves do padrão REST
+//O parametro no GET significa o endpoint da nossa URI base
+interface MarsApiService {
+    @GET("realestate")
+    fun getProperties() : Call<List<MarsProperty>>
+}
+
+/*
+    Um object pois só tera uma instancia dessa classe
+    a conexão é criada a partir das regras definidas acima como baseUrl e a interface que definimos o comportamento
+    A mesma ideia utilizamos a inicialização lazy, significa que a primeira vez a minha variável irá inicializar um valor
+    mas posteriormente, ela não será mais inicializada, retornando o mesmo valor, tornado uma "static".
+    Detalhe que para utilizar a lazy, a propriedade deve ser imutável "val"
+ */
+object MarsApi {
+    val retrofitService : MarsApiService by lazy {
+        retrofit.create(MarsApiService::class.java)
+    }
+}
