@@ -34,17 +34,21 @@ import java.lang.Exception
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
  */
+
+enum class MarsApiStatus { LOADING, ERROR, DONE }
+
 class OverviewViewModel : ViewModel() {
 
-    // The internal MutableLiveData String that stores the status of the most recent request
-    private val _response = MutableLiveData<String>()
+    private val _status = MutableLiveData<MarsApiStatus>()
+    val status: LiveData<MarsApiStatus>
+        get() = _status
 
-    // The external immutable LiveData for the request status String
-    val response: LiveData<String>
-        get() = _response
+    private val _properties = MutableLiveData<List<MarsProperty>>()
+    val properties: LiveData<List<MarsProperty>>
+        get() = _properties
 
     private var viewModelJob = Job()
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main )
+    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
@@ -67,13 +71,16 @@ class OverviewViewModel : ViewModel() {
         coroutineScope.launch {
             var getPropertiesDeferred = MarsApi.retrofitService.getProperties()
             try {
-                var listResult = getPropertiesDeferred.await()
-                _response.value = "Succes: ${listResult?.size} Mars properties retrieved \n ${listResult?.toString()}"
-            } catch (t:Throwable) {
-                _response.value = "Failure: ${t.message}"
+                _status.value = MarsApiStatus.LOADING
+
+                val listResult =  getPropertiesDeferred.await()
+                _status.value = MarsApiStatus.DONE
+                _properties.value = listResult
+            } catch (e: Exception) {
+                _status.value = MarsApiStatus.ERROR
+                _properties.value = ArrayList()
             }
         }
-        _response.value = "Set the Mars API Response here!"
     }
 
     override fun onCleared() {
