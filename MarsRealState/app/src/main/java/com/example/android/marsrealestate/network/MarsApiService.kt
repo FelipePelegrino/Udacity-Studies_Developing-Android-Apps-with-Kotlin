@@ -26,6 +26,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 /*
 Classe representará a comunicação com o WebServer, é o "ViewModel" da camada network
@@ -34,6 +35,8 @@ Classe representará a comunicação com o WebServer, é o "ViewModel" da camada
 
 
 private const val BASE_URL = "https://mars.udacity.com/"
+
+enum class MarsApiFilter(val value: String) { SHOW_RENT("rent"), SHOW_BUY("buy"), SHOW_ALL("all") }
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -52,7 +55,7 @@ private val retrofit = Retrofit.Builder()
 //Deferred é um job non-blocking que pode retornar o resultado diretamente
 interface MarsApiService {
     @GET("realestate")
-    fun getProperties() : Deferred<List<MarsProperty>>
+    fun getProperties(@Query("filter") type: String):  Deferred<List<MarsProperty>>
 }
 
 /*
@@ -63,7 +66,7 @@ interface MarsApiService {
     Detalhe que para utilizar a lazy, a propriedade deve ser imutável "val"
  */
 object MarsApi {
-    val retrofitService : MarsApiService by lazy {
+    val retrofitService: MarsApiService by lazy {
         retrofit.create(MarsApiService::class.java)
     }
 }

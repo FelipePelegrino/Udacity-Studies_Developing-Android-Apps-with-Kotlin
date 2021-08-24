@@ -43,4 +43,7 @@ data class MarsProperty(
     val imgSrcUrl: String,
     val type: String,
     val price: Double
-):Parcelable
+):Parcelable {
+    val isRental
+        get() = type == "rent"
+}
