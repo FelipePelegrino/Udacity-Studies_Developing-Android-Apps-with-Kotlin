@@ -17,6 +17,8 @@
 
 package com.example.android.marsrealestate.network
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.squareup.moshi.Json
 
 /**
@@ -25,6 +27,10 @@ import com.squareup.moshi.Json
  * Mas podemos fazer de uma forma mais amigavel aos padrões Kotlin
  * Definimos a propriedade json com a annotation @Json passando como parametro o atributo qu queremos referenciar
  * a essa propriedade criada em kotlin e em kotlin podemos somente manter seu padrão de convençãod e código
+ *
+ * Implementar o Parcelable dessa forma, é sucetivel a erros sempre que o código for atualizado
+ * pois caso não se atualize os métodos (que acontecem de forma sequencial a leitura e escrita de um parcel)
+ * a aplicação pode crashar
  */
 data class MarsProperty(
     val id: String,
@@ -32,4 +38,34 @@ data class MarsProperty(
     val imgSrcUrl: String,
     val type: String,
     val price: Double
-)
+):Parcelable() {
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble()
+    ) {
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
+        parcel.writeString(imgSrcUrl)
+        parcel.writeString(type)
+        parcel.writeDouble(price)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<MarsProperty> {
+        override fun createFromParcel(parcel: Parcel): MarsProperty {
+            return MarsProperty(parcel)
+        }
+
+        override fun newArray(size: Int): Array<MarsProperty?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+}
