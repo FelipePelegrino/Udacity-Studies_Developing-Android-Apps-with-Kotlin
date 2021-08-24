@@ -17,9 +17,9 @@
 
 package com.example.android.marsrealestate.network
 
-import android.os.Parcel
 import android.os.Parcelable
 import com.squareup.moshi.Json
+import kotlinx.android.parcel.Parcelize
 
 /**
  * Para utlizar o moshi precisamos definir as propriedades com os mesmos nomes
@@ -31,41 +31,16 @@ import com.squareup.moshi.Json
  * Implementar o Parcelable dessa forma, é sucetivel a erros sempre que o código for atualizado
  * pois caso não se atualize os métodos (que acontecem de forma sequencial a leitura e escrita de um parcel)
  * a aplicação pode crashar
+ *
+ * Por esse motivo, utilizaremos a Kotlin Android Extensions plug
+ * Na qual apenas utilizaremos a annotation @Parcelize, que o processo será feito automaticamente
  */
+
+@Parcelize
 data class MarsProperty(
     val id: String,
     @Json(name = "img_src")
     val imgSrcUrl: String,
     val type: String,
     val price: Double
-):Parcelable() {
-    constructor(parcel: Parcel) : this(
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readDouble()
-    ) {
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(id)
-        parcel.writeString(imgSrcUrl)
-        parcel.writeString(type)
-        parcel.writeDouble(price)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<MarsProperty> {
-        override fun createFromParcel(parcel: Parcel): MarsProperty {
-            return MarsProperty(parcel)
-        }
-
-        override fun newArray(size: Int): Array<MarsProperty?> {
-            return arrayOfNulls(size)
-        }
-    }
-
-}
+):Parcelable
